@@ -13,6 +13,14 @@ namespace Restaurant_Systems
         static Table[] tables = new Table[5];
         static Product[] products = new Product[12];
         static List<Order> waitingOrders = new List<Order>();
+        static int oQuantity = 1;
+        
+        static double totalEarnedCash = 0;
+        static double table1 = 0;
+        static double table2 = 0;
+        static double table3 = 0;
+        static double table4 = 0;
+        static double table5 = 0;
 
         static void Main(string[] args)
         {
@@ -78,47 +86,7 @@ namespace Restaurant_Systems
 
         }
 
-        class Product
-        {
-            public int productId { get; set; }
-            public string productName { get; set; }
-
-            public double productPrice { get; set; }
-
-
-        }
-        class Order
-        {
-            public Product selectedProduct { get; set; }
-            public int tableId { get; set; }
-            public int quantity { get; set; }
-
-            
-
-        }
-        class Table
-        {
-            public int tableId { get; set; }
-            public double totalPrice { get; set; }
-            public bool isTableOccupied { get; set; }
-            public List<Order> products { get; set; } = new List<Order>();
-
-                
-        }
-        class Admin //Giriş sistemi için class
-        {
-            public string adminUsername { get; set; }
-            private string adminPassword;
-            public bool CheckPassword(string password)
-            {
-                return password == adminPassword;
-            }
-
-            public void SetPassword(string password)
-            {
-                adminPassword = password;
-            }
-        }
+        
         static void Mainmenu()
         {
             Console.Clear();
@@ -176,11 +144,11 @@ namespace Restaurant_Systems
             Console.WriteLine("               MASA AÇ               ");
             Console.WriteLine("-------------------------------------");
 
-            foreach (Table table in tables)
+            for (int i = 1; i <= 5; i++)
             {
-                string tableStatus = table.isTableOccupied ? "DOLU" : "BOŞ";
-                Console.WriteLine($"{table.tableId}. Masa // Durumu: {tableStatus}");
-
+                Table table = tables.FirstOrDefault(t => t.tableId == i);
+                string tableStatus = table.products.Any(p => p.Ready) ? "Dolu" : "Boş";
+                Console.WriteLine($"{i}. Masa // Durumu: {tableStatus}");
             }
             Console.WriteLine("-------------------------------------");
             Console.Write("Masa seçiniz: ");
@@ -202,14 +170,62 @@ namespace Restaurant_Systems
                 Console.WriteLine($"      {selectedTableId}.MASA - SİPARİŞLERİ   ");
                 Console.WriteLine("-------------------------------------");
                 
-                foreach (Order o in waitingOrders)
+                foreach (var o in selectedTable.products.Where(x=>!x.Ready))
                 {
                     
-                    Console.WriteLine($"{o.tableId}.Masa: Beklemedeki Sipariş // Ürün: {o.selectedProduct.productName} // Adet: {o.quantity} // Ücreti: {o.selectedProduct.productPrice * o.quantity} TL");
+                    Console.WriteLine($"Sipariş ID: {o.orderId} {o.tableId}.Masa: Beklemedeki Sipariş // Ürün: {o.selectedProduct.productName} // Adet: {o.quantity} // Ücreti: {o.selectedProduct.productPrice * o.quantity} TL");
                 }
                 Console.ForegroundColor = ConsoleColor.Blue;
-                Console.WriteLine("ONAYLA [SPACE]\nAna Menü [ESC]\nGeri Git [Sol OK]");
+                Console.WriteLine("ONAYLA [SPACE]\nYeni Sipariş Ekle [Yukarı OK]\nAna Menü [ESC]\nGeri Git [Sol OK]");
                 Console.ForegroundColor = ConsoleColor.White;
+                
+                bas:
+                if (Console.ReadKey().Key == ConsoleKey.Spacebar)
+                {
+                    foreach (Order o in selectedTable.products.Where(x => !x.Ready))
+                    {
+                        o.Ready = true;
+                    }
+                    Console.WriteLine("Tüm bekleyen siparişler hazırlandı!");
+
+                }
+                else if(Console.ReadKey().Key == ConsoleKey.UpArrow)
+                {
+                    Console.WriteLine("Ürün idsi giriniz:");
+                    int selectedProductId = int.Parse(Console.ReadLine());
+                    Console.WriteLine("Ürün adetini giriniz:");
+                    int selectedProductQuantity = int.Parse(Console.ReadLine());
+
+                    var order = new Order { quantity = selectedProductQuantity, selectedProduct = products.FirstOrDefault(x => x.productId == selectedProductId), tableId = selectedTableId, Ready = false, orderId = oQuantity };
+                    selectedTable.products.Add(order);
+                    oQuantity++;
+                    Console.WriteLine($"Sipariş ID: {order.orderId} // {order.tableId}. Masa için {selectedProductQuantity} adet {order.selectedProduct.productName} siparişi bekleme listesine eklendi.");
+                }
+                else if (Console.ReadKey().Key == ConsoleKey.LeftArrow)
+                {
+                    SelectTable();
+                }
+                else if (Console.ReadKey().Key == ConsoleKey.Escape)
+                {
+                    Mainmenu();
+                }
+                else
+                { goto bas; }
+                Console.WriteLine("Lütfen menü seçin /anamenu /masaac");
+                string opt = Console.ReadLine().ToLower();
+                switch (opt)
+                {
+                    case "anamenu":
+                        Mainmenu();
+                        break;
+                    case "masaac":
+                        SelectTable();
+                        break;
+                    case "masaislem":
+                        TableOperation();
+                        break;
+
+                }
             }
             else
             {
@@ -224,33 +240,43 @@ namespace Restaurant_Systems
             Console.WriteLine("              MASA İŞLEM             ");
             Console.WriteLine("-------------------------------------");
 
-            foreach (Table t in tables)
+            for (int i = 1; i <= 5; i++)
             {
-                string tableStatus = t.isTableOccupied ? "DOLU" : "BOŞ";
-
-                Console.WriteLine($"{t.tableId}. Masa // Durumu: {tableStatus}");
-
+                Table table = tables.FirstOrDefault(t => t.tableId == i);
+                string tableStatus = table.products.Any(p => p.Ready) ? "Dolu" : "Boş";
+                Console.WriteLine($"{i}. Masa // Durumu: {tableStatus}");
             }
             Console.WriteLine("Ana Menü [ESC]");
             Console.Write("Masa ID giriniz:");
             int selectedTableId = int.Parse(Console.ReadLine());
             Table selectedTable = tables.FirstOrDefault(x => x.tableId == selectedTableId);
-            basa:
-
+        
+            
             if (selectedTable != null)
             {
+                Console.Clear();
                 Console.WriteLine("-------------------------------------");
-                Console.WriteLine($"      {selectedTableId}.MASA        ");
+                Console.WriteLine($"               {selectedTableId}.MASA        ");
                 Console.WriteLine("-------------------------------------");
                 Console.WriteLine("Mevcut Siparişler");
-                if(selectedTable.products.Count>0)
+                double totalEarnedInaTable = 0;
+                if (selectedTable.products.Count>0)
                 {
-                    foreach (Order o in selectedTable.products)
+                    foreach (var o in selectedTable.products.Where(x=>x.Ready))
                     {
-                        int i = 0;
-                        Console.WriteLine($"{i + 1}.Ürün:{o.selectedProduct.productName} Ücreti: ({o.selectedProduct.productPrice} TL)");
-                        i++;
+                        
+                        Console.WriteLine($"{selectedTable.tableId}.Masa - Ürün:{o.selectedProduct.productName} Ücreti: ({o.selectedProduct.productPrice} TL)");
+                        totalEarnedInaTable += o.selectedProduct.productPrice * o.quantity;
+
                     }
+                    Console.WriteLine($"Siparişlerin Tutarı:{totalEarnedInaTable} TL");
+                    if (selectedTableId == 1) { table1 += totalEarnedInaTable; }
+                    else if (selectedTableId == 2) { table2 += totalEarnedInaTable; }
+                    else if (selectedTableId == 3) { table3 += totalEarnedInaTable; }
+                    else if (selectedTableId == 4) { table4 += totalEarnedInaTable; }
+                    else if (selectedTableId == 5) { table5 += totalEarnedInaTable; }
+
+
                 }
                 else
                 {
@@ -281,23 +307,36 @@ namespace Restaurant_Systems
                 Console.WriteLine("-------------------------------------");
                 Console.WriteLine("             SİPARİŞLER              ");
                 Console.WriteLine("-------------------------------------");
-                foreach (Order o in waitingOrders)
+                foreach (var o in selectedTable.products.Where(x => !x.Ready)) //beklemedeki siparişleri gösterir
                 {
-                    
-                    Console.WriteLine($"{o.tableId}.Masa: Beklemedeki Sipariş // Ürün: {o.selectedProduct.productName} // Adet: {o.quantity} // Ücreti: {o.selectedProduct.productPrice*o.quantity} TL");
+
+                    Console.WriteLine($"Sipariş ID: {o.orderId} {o.tableId}.Masa: Beklemedeki Sipariş // Ürün: {o.selectedProduct.productName} // Adet: {o.quantity} // Ücreti: {o.selectedProduct.productPrice * o.quantity} TL");
                 }
                 Console.WriteLine("Ürün idsi giriniz:");
                 int selectedProductId = int.Parse(Console.ReadLine());
                 Console.WriteLine("Ürün adetini giriniz:");
                 int selectedProductQuantity = int.Parse (Console.ReadLine());
-                var order = new Order{ quantity = selectedProductQuantity,selectedProduct = products.FirstOrDefault(x => x.productId == selectedProductId),tableId = selectedTableId };
-                waitingOrders.Add(order);
-                Console.WriteLine($"{order.tableId}. Masa için {selectedProductQuantity} adet {order.selectedProduct.productName} siparişi bekleme listesine eklendi. Sipariş ID: {waitingOrders.IndexOf(order) + 1}");
-                Mainmenu();
-                goto basa;
+                
+                var order = new Order{ quantity = selectedProductQuantity,selectedProduct = products.FirstOrDefault(x => x.productId == selectedProductId),tableId = selectedTableId,Ready = false,orderId=oQuantity };
+                selectedTable.products.Add(order);
+                oQuantity++;
+                Console.WriteLine($"Sipariş ID: {order.orderId} // {order.tableId}. Masa için {selectedProductQuantity} adet {order.selectedProduct.productName} siparişi bekleme listesine eklendi.");
+                 //waitingOrders.IndexOf(order) + 1
+                Console.WriteLine("Lütfen menü seçin /anamenu /masaac");
+                string opt = Console.ReadLine().ToLower();
+                switch(opt)
+                {
+                    case "anamenu":
+                        Mainmenu();
+                        break;
+                    case "masaac":
+                        SelectTable();
+                        break;
+                    case "masaislem":
+                        TableOperation();
+                        break;
 
-
-
+                }
             }
             else if (selection == 2)
             {
@@ -305,18 +344,24 @@ namespace Restaurant_Systems
                 Console.WriteLine("-------------------------------------");
                 Console.WriteLine($"      {selectedTableId}.MASA  - SİPARİŞ SİL     ");
                 Console.WriteLine("-------------------------------------");
-                Console.WriteLine("BURASI DÜZENLENECEK*******");
+                int i = 1;
+                int orderRemovalSelection = int.Parse(Console.ReadLine());
+                foreach (var o in selectedTable.products.Where(x => x.Ready))
+                {
+                    
+                    Console.WriteLine($"{i}.Ürün {selectedTable.tableId}.Masa // Ürün:{o.selectedProduct.productName} // Ücreti: ({o.selectedProduct.productPrice} TL)");
+                    i++;
+                    selectedTable.products.Remove(selectedTable.products.FirstOrDefault(p=> p.Ready&& p.selectedProduct.productName == selectedTable.products.Where(p2 => p2.Ready).ToList()[orderRemovalSelection-1].selectedProduct.productName));
+                    Console.WriteLine("Sipariş silindi!");
+
+                }
             }
             else
             {
                 Console.WriteLine("Hatalı bir giriş yaptınız!");
             }
         }
-        static void AddOrderToWaitingList(Table selectedTable, Product selectedProduct, int quantity)
-{
-    waitingOrders.Add(new Order { selectedProduct = selectedProduct, quantity = quantity });
-    Console.WriteLine($"{selectedTable.tableId}. Masa için {quantity} adet {selectedProduct.productName} siparişi bekleme listesine eklendi.");
-}
+        
 
     }
 }
