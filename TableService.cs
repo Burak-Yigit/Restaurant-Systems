@@ -21,7 +21,7 @@ namespace Restaurant_Systems
         public Product selectedProduct { get; set; }
         public int quantity { get; set; }
         
-        public bool Ready { get; set; }
+        public bool Ready { get; set; } // Masada sipariş bekleme - onaylanma durumuyla ilgilenir // ayrıyeten boş ve dolu masaları gösterir.
         
         public int orderId { get; set; }
         
@@ -32,10 +32,16 @@ namespace Restaurant_Systems
 class Table
 {
     public int tableId { get; set; }
-    public double totalPrice { get; set; }
-    public bool isTableOccupied { get; set; }
-    public List<Order> products { get; set; } = new List<Order>();
+    public double totalPrice = 0;
+    public double totalTip = 0;
+    public double temporaryTip = 0;
     
+    public List<Order> products { get; set; } = new List<Order>();
+    public void ClearOrders()
+    {
+        products.Clear();
+    }
+
 
 
 }
