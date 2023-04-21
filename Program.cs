@@ -598,6 +598,7 @@ namespace Restaurant_Systems
             
             
             Table selectedTable = tables.FirstOrDefault(x => x.tableId == selectedTableId);
+            tBill:
             if (selectedTable != null && selectedTable.products.Any(p => p.Ready))
             {
 
@@ -641,6 +642,10 @@ namespace Restaurant_Systems
                     {
                         TableBill();
                     }
+                    else
+                    {
+                        goto tBill;
+                    }
 
                 }
                 else
@@ -657,7 +662,7 @@ namespace Restaurant_Systems
 
 
         }
-        static void Pay(Table selectedTable)
+        static void Pay(Table selectedTable) //Normal ödeme yapmak için
         {
             Console.Clear();
             double totalEarnedInaTable = 0;
@@ -720,7 +725,7 @@ namespace Restaurant_Systems
             }
 
         }
-        static void discountedPayment(Table selectedTable)
+        static void discountedPayment(Table selectedTable) //İndirimli Ödeme yapmak için
         {
             Console.Clear();
             double totalEarnedInaTable = 0;
@@ -796,7 +801,7 @@ namespace Restaurant_Systems
                     if (selectedTable.temporaryTip >= 0)
                     {
                         tLoop = true;
-                        Console.WriteLine($"{selectedTable.temporaryTip} TL bağış miktarı masaya eklendi");
+                        Console.WriteLine($"{selectedTable.temporaryTip} TL bahşiş miktarı masaya eklendi");
                     }
                 }
                 catch

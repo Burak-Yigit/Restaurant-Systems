@@ -34,7 +34,7 @@ class Table
     public int tableId { get; set; }
     public double totalPrice = 0;
     public double totalTip = 0;
-    public double temporaryTip = 0;
+    public double temporaryTip = 0; //masaya özel olarak hesap ödene kadar burda tutar. Ödendikten sonra değeri totalTip nesnesine ekler ve kendinden siler.
     
     public List<Order> products { get; set; } = new List<Order>();
     public void ClearOrders()
