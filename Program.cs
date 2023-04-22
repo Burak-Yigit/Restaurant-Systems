@@ -823,7 +823,7 @@ namespace Restaurant_Systems
             Console.WriteLine("---------------------------------------------------");
             Console.WriteLine($"Toplam Tutar: {totalEarnedCash} TL");
             Console.WriteLine($"Toplam Bahşiş: {totalEarnedTip} TL");
-            Console.WriteLine($"Toplam Verilen Sipariş: {oQuantity}");
+            Console.WriteLine($"Toplam Verilen Sipariş: {oQuantity-1}");
             Console.WriteLine("---------------------------------------------------");
             Console.WriteLine("         Masalara Göre Kazanç        ");
             foreach (Table table in tables)
